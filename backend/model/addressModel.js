@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const addressSchema = new mongoose.Schema(
   {
-    user: {
+    user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -54,7 +54,6 @@ const addressSchema = new mongoose.Schema(
 
     isDefault: {
       type: Boolean,
-      required: true,
       default: false,
     },
   },

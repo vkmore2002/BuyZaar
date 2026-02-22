@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const wishlistItemSchema = new mongoose.Schema(
   {
-    product: {
+    product_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
       required: true,
@@ -18,7 +18,7 @@ const wishlistItemSchema = new mongoose.Schema(
 
 const wishlistSchema = new mongoose.Schema(
   {
-    user: {
+    user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
