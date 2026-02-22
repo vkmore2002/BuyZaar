@@ -21,15 +21,18 @@ const productSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true,
+      min: 0,
     },
 
     discountPrice: {
       type: Number,
+      min: 0,
     },
 
     stock: {
       type: Number,
       required: true,
+      min: 0,
     },
 
     totalSold: {
@@ -40,6 +43,8 @@ const productSchema = new mongoose.Schema(
     averageRating: {
       type: Number,
       default: 0,
+      min: 0,
+      max: 5,
     },
 
     totalRatings: {
