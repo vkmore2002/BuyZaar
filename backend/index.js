@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./db/dbConnection.js";
+
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -18,8 +19,22 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
+/* ------------------ MIDDLEWARE ------------------ */
+
+// CORS configuration (works for both local & production)
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // local frontend (Vite)
+      process.env.FRONTEND_URL, // deployed frontend (Vercel)
+    ],
+    credentials: true,
+  }),
+);
+
 app.use(express.json());
+
+/* ------------------ ROUTES ------------------ */
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -32,9 +47,13 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/addresses", addressRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 
+/* ------------------ TEST ROUTE ------------------ */
+
 app.get("/", (req, res) => {
   res.send("Buyzaar API Running");
 });
+
+/* ------------------ SERVER ------------------ */
 
 const PORT = process.env.PORT || 5000;
 
