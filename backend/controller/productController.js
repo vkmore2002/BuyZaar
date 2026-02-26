@@ -6,7 +6,10 @@ import Subcategory from "../model/subcategoryModel.js";
  * @route   POST /api/products
  * @access  Admin
  */
+
 const createProduct = async (req, res) => {
+  console.log("BODY:", req.body);
+  console.log("FILES:", req.files);
   try {
     const {
       name,
@@ -15,9 +18,11 @@ const createProduct = async (req, res) => {
       price,
       discountPrice,
       stock,
-      images,
       subcategory,
     } = req.body;
+
+    // Get image URLs from Cloudinary (multer middleware)
+    const imageUrls = req.files?.map((file) => file.path);
 
     if (
       !name ||
@@ -25,15 +30,15 @@ const createProduct = async (req, res) => {
       !longDescription ||
       price === undefined ||
       stock === undefined ||
-      !images ||
-      !subcategory
+      !subcategory ||
+      !imageUrls ||
+      imageUrls.length === 0
     ) {
       return res.status(400).json({
-        message: "All required fields must be provided",
+        message: "All required fields including images must be provided",
       });
     }
 
-    // Check if subcategory exists
     const existingSubcategory = await Subcategory.findById(subcategory);
     if (!existingSubcategory) {
       return res.status(404).json({
@@ -45,34 +50,54 @@ const createProduct = async (req, res) => {
       name,
       shortDescription,
       longDescription,
-      price,
-      discountPrice,
-      stock,
-      images,
+      price: Number(price),
+      discountPrice: discountPrice ? Number(discountPrice) : undefined,
+      stock: Number(stock),
+      images: imageUrls,
       subcategory,
     });
 
     res.status(201).json(product);
   } catch (error) {
-    console.log(error);
+    console.log("FULL ERROR:", error);
+    console.log("ERROR MESSAGE:", error.message);
+    console.log("STACK:", error.stack);
     res.status(500).json({ message: error.message });
   }
 };
 
 /**
- * @desc    Get all products
+ * @desc    Get all products (with optional category filter)
  * @route   GET /api/products
  * @access  Public
  */
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find()
-      .populate("subcategory", "name")
+    const { category } = req.query;
+
+    let filter = {};
+
+    if (category) {
+      const subcategories = await Subcategory.find({ category });
+
+      if (subcategories.length === 0) {
+        return res.status(200).json([]);
+      }
+
+      const subcategoryIds = subcategories.map((sub) => sub._id);
+      filter.subcategory = { $in: subcategoryIds };
+    }
+
+    const products = await Product.find(filter)
+      .populate({
+        path: "subcategory",
+        populate: { path: "category" },
+      })
       .select("-__v");
 
     res.status(200).json(products);
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -84,7 +109,10 @@ const getAllProducts = async (req, res) => {
 const getSingleProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .populate("subcategory", "name")
+      .populate({
+        path: "subcategory",
+        populate: { path: "category" },
+      })
       .select("-__v");
 
     if (!product) {
@@ -121,7 +149,6 @@ const updateProduct = async (req, res) => {
       price,
       discountPrice,
       stock,
-      images,
       subcategory,
     } = req.body;
 
@@ -131,7 +158,12 @@ const updateProduct = async (req, res) => {
     if (price !== undefined) product.price = price;
     if (discountPrice !== undefined) product.discountPrice = discountPrice;
     if (stock !== undefined) product.stock = stock;
-    if (images) product.images = images;
+
+    // If new images uploaded
+    if (req.files && req.files.length > 0) {
+      const imageUrls = req.files.map((file) => file.path);
+      product.images = imageUrls;
+    }
 
     if (subcategory) {
       const existingSubcategory = await Subcategory.findById(subcategory);

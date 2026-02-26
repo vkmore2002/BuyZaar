@@ -36,7 +36,12 @@ function Signup() {
       // Auto login after signup
       login(data);
 
-      navigate("/");
+      // Navigate to dashboard for admin, else to home
+      if (data.user.role === "admin") {
+        navigate("/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err.message);
     }

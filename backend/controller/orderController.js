@@ -123,4 +123,53 @@ const getOrderById = async (req, res) => {
   }
 };
 
-export { placeOrder, getMyOrders, getOrderById };
+/**
+ * @desc    Get all orders (Admin)
+ * @route   GET /api/orders
+ * @access  Admin
+ */
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+/**
+ * @desc    Update order status (Admin)
+ * @route   PUT /api/orders/:id/status
+ * @access  Admin
+ */
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderStatus, paymentStatus } = req.body;
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (orderStatus) order.orderStatus = orderStatus;
+    if (paymentStatus) order.paymentStatus = paymentStatus;
+
+    const updatedOrder = await order.save();
+
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export {
+  placeOrder,
+  getMyOrders,
+  getOrderById,
+  getAllOrders,
+  updateOrderStatus,
+};

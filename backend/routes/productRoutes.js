@@ -8,6 +8,7 @@ import {
 } from "../controller/productController.js";
 
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
+import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
@@ -15,7 +16,13 @@ const router = express.Router();
  * @route   POST /api/products
  * @access  Admin
  */
-router.post("/", protect, adminOnly, createProduct);
+router.post(
+  "/",
+  protect,
+  adminOnly,
+  upload.array("images", 5), // allow up to 5 images
+  createProduct,
+);
 
 /**
  * @route   GET /api/products
@@ -33,7 +40,13 @@ router.get("/:id", getSingleProduct);
  * @route   PUT /api/products/:id
  * @access  Admin
  */
-router.put("/:id", protect, adminOnly, updateProduct);
+router.put(
+  "/:id",
+  protect,
+  adminOnly,
+  upload.array("images", 5),
+  updateProduct,
+);
 
 /**
  * @route   DELETE /api/products/:id

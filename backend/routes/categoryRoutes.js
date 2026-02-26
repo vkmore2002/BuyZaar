@@ -1,29 +1,25 @@
 import express from "express";
 import {
-  addToCart,
-  getMyCart,
-  updateCartItem,
-  removeFromCart,
-  clearCart,
-} from "../controller/cartController.js";
+  createCategory,
+  getAllCategories,
+  updateCategory,
+  deleteCategory,
+} from "../controller/categoryController.js";
 
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Private - Get logged-in user's cart
-router.get("/", protect, getMyCart);
+// Public - Get all categories
+router.get("/", getAllCategories);
 
-// Private - Add product to cart
-router.post("/", protect, addToCart);
+// Admin - Create category
+router.post("/", protect, adminOnly, createCategory);
 
-// Private - Update cart item quantity
-router.put("/", protect, updateCartItem);
+// Admin - Update category
+router.put("/:id", protect, adminOnly, updateCategory);
 
-// Private - Remove item from cart
-router.delete("/:productId", protect, removeFromCart);
-
-// Private - Clear entire cart
-router.delete("/", protect, clearCart);
+// Admin - Delete category
+router.delete("/:id", protect, adminOnly, deleteCategory);
 
 export default router;
