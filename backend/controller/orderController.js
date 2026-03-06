@@ -1,6 +1,7 @@
 import Order from "../model/orderModel.js";
 import Cart from "../model/cartModel.js";
 import Product from "../model/productModel.js";
+import Address from "../model/addressModel.js";
 
 /**
  * @desc    Place new order
@@ -14,6 +15,14 @@ const placeOrder = async (req, res) => {
     if (!shippingAddress || !paymentMethod) {
       return res.status(400).json({
         message: "Shipping address and payment method are required",
+      });
+    }
+
+    // Fetch the address details
+    const address = await Address.findById(shippingAddress);
+    if (!address) {
+      return res.status(400).json({
+        message: "Invalid shipping address",
       });
     }
 
@@ -60,7 +69,17 @@ const placeOrder = async (req, res) => {
     const order = await Order.create({
       user: req.user._id,
       items: orderItems,
-      shippingAddress,
+      shippingAddress: {
+        fullName: address.fullName,
+        phone: address.phone,
+        houseNo: address.houseNo,
+        area: address.area,
+        landmark: address.landmark,
+        city: address.city,
+        state: address.state,
+        postalCode: address.postalCode,
+        country: address.country,
+      },
       totalPrice,
       paymentMethod,
       paymentStatus: "pending",
