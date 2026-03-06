@@ -53,3 +53,9 @@ export const updateProduct = async (id, formData, token) => {
 
   return res.data;
 };
+
+// Public - Get single product details by id
+export const getProductById = async (id) => {
+  const res = await axios.get(`${API_URL}/${id}`);
+  return res.data;
+};

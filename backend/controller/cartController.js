@@ -62,6 +62,9 @@ const addToCart = async (req, res) => {
 
     await cart.save();
 
+    // populate before returning so frontend can display product info
+    await cart.populate("items.product", "name price images");
+
     res.status(200).json(cart);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
@@ -121,6 +124,9 @@ const updateCartItem = async (req, res) => {
     );
 
     await cart.save();
+
+    // populate again so client gets full product objects
+    await cart.populate("items.product", "name price images");
 
     res.status(200).json(cart);
   } catch (error) {
